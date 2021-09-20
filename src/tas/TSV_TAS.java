@@ -217,23 +217,25 @@ class TSV_TAS extends JFrame implements ActionListener {
  				destination.delete();
  				return;
  			}
- 		while (s.hasNext())
- 			try {
- 				ln.add(s.next().toLowerCase());
- 			}
- 			catch (Exception e) {
-				message.setText("Syntax errors in TSV prevented file generation.");
-				s.close();
-				scan.close();
-				print.close();
-				destination.delete();
-				return;
-			}
- 		if (!blank.isSelected() && ln.isEmpty())
- 			line += duration;
- 		else
- 			for (int i = 0; i < duration; i++, line++)
- 				print.println(line + " " + ln.get(i));
+ 		if (duration > 0) {
+	 		while (s.hasNext())
+	 			try {
+	 				ln.add(s.next().toLowerCase());
+	 			}
+	 			catch (Exception e) {
+					message.setText("Syntax errors in TSV prevented file generation.");
+					s.close();
+					scan.close();
+					print.close();
+					destination.delete();
+					return;
+				}
+	 		if (!blank.isSelected() && ln.isEmpty())
+	 			line += duration;
+	 		else
+	 			for (int i = 0; i < duration; i++, line++)
+	 				print.println(line + " " + ln.get(i));
+ 		}
  	}
  	scan.close();
  	print.close();

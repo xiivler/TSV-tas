@@ -3,9 +3,6 @@ package tas;
 //Java program to create open or
 //save dialog using JFileChooser
 import java.io.*;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Scanner;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -13,6 +10,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.filechooser.*;
+
 class TSV_TAS extends JFrame implements ActionListener {
 
  static JTextField savePath;
@@ -20,15 +18,7 @@ class TSV_TAS extends JFrame implements ActionListener {
  static JCheckBox blank;
  static JLabel message;
  
- private static File file;
- private static File destFile;
- 
  private static String OS = System.getProperty("os.name");
-
- // a default constructor
- TSV_TAS()
- {
- }
 
  public static void main(String args[])
  {
@@ -109,7 +99,7 @@ class TSV_TAS extends JFrame implements ActionListener {
 
      f.add(all);
      
-     f.show();
+     f.setVisible(true);
  }
  
  public void actionPerformed(ActionEvent evt)
@@ -118,7 +108,8 @@ class TSV_TAS extends JFrame implements ActionListener {
      String com = evt.getActionCommand();
 
      if (com.equals("run")) {
-    	 writeFile();
+    	 ScriptWriter scriptWriter = new ScriptWriter(new File(loadPath.getText()), new File(savePath.getText()), blank.isSelected());
+    	 message.setText(scriptWriter.writeFile());
      }
      
      else if (com.equals("save")) {
@@ -164,90 +155,5 @@ class TSV_TAS extends JFrame implements ActionListener {
              savePath.setText(savepath);
          }
      }
- }
- 
- private static void writeFile() {
-	
-	long start = System.currentTimeMillis();
-	
-	File destination = null;
-	
-	Scanner scan = null;
-	try {
-		scan = 	new Scanner(new File(loadPath.getText()));
-	}
-	catch (FileNotFoundException e) {
-		message.setText("TSV file not found.");
-		return;
-	}
- 	
- 	PrintWriter print = null;
- 	try {
- 		destination = new File(savePath.getText() + "-temp");
-		print = new PrintWriter(destination);
- 	}
- 	catch (FileNotFoundException e) {
- 		message.setText("Output destination not found.");
- 		scan.close();
- 		return;
- 	}
-	int line = 1;
-	String first = "";
- 	while (scan.hasNextLine()) {
- 		Scanner s = new Scanner(scan.nextLine()).useDelimiter("\t");
- 		int duration = 1;
- 		if (s.hasNextInt())
- 			duration = s.nextInt();
- 		else if (s.hasNext()) {
- 			first = s.next();
- 			if (first.equals("//"))
- 				duration = 0;			
- 		}
- 		Line ln = new Line(duration);
- 		//if there was no duration number we already got the first input and need to add it to the line
- 		if (duration == 1)
- 			try {
- 				ln.add(first.toLowerCase());
- 			}
- 			catch (Exception e) {
- 				message.setText("Syntax errors in TSV prevented file generation.");
- 				s.close();
- 				scan.close();
- 				print.close();
- 				destination.delete();
- 				return;
- 			}
- 		if (duration > 0) {
-	 		while (s.hasNext())
-	 			try {
-	 				ln.add(s.next().toLowerCase());
-	 			}
-	 			catch (Exception e) {
-					message.setText("Syntax errors in TSV prevented file generation.");
-					s.close();
-					scan.close();
-					print.close();
-					destination.delete();
-					return;
-				}
-	 		if (!blank.isSelected() && ln.isEmpty())
-	 			line += duration;
-	 		else
-	 			for (int i = 0; i < duration; i++, line++)
-	 				print.println(line + " " + ln.get(i));
- 		}
- 	}
- 	scan.close();
- 	print.close();
- 	
- 	File existing = new File(savePath.getText());
- 	existing.delete();
- 	destination.renameTo(existing);
- 	
- 	DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm:ss");
- 	
- 	long end = System.currentTimeMillis();
- 	long time = end - start;
- 	message.setText("File successfully generated in " + time + " ms at " + timeFormat.format(LocalTime.now()) + ".");
  }
 }

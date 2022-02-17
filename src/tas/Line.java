@@ -42,6 +42,17 @@ public class Line {
 		encode.put("dp-u", "KEY_DUP");
 		encode.put("dp-d", "KEY_DDOWN");
 		
+		encode.put("m-ll", "KEY_DLEFT");
+		encode.put("m-rr", "KEY_DRIGHT");
+		encode.put("m-uu", "KEY_DUP");
+		encode.put("m-dd", "KEY_DDOWN");
+		
+		encode.put("m-l", "KEY_L;KEY_DLEFT");
+		encode.put("m-r", "KEY_L;KEY_DRIGHT");
+		encode.put("m-u", "KEY_L;KEY_DUP");
+		encode.put("m-d", "KEY_L;KEY_DDOWN");
+		encode.put("m", "KEY_L");
+		
 		encode.put("ls", "KEY_LSTICK");
 		encode.put("rs", "KEY_RSTICK");
 	}
@@ -128,13 +139,14 @@ public class Line {
 		}
 		
 		if (stick == LS) {
-				ls_x[step] = x;
-				ls_y[step] = y;
-			}
+			ls_x[step] = x;
+			ls_y[step] = y;
+		}
 		else {
 			rs_x[step] = x;
 			rs_y[step] = y;
 		}
+		
 	}
 	
 	private void addInterpolatedStick(boolean stick, String s) {

@@ -3,6 +3,7 @@ package tas;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+//class representing a single line of TSV-TAS instructions (which can include multiple frames if there are loops or interpolations)
 public class Line {
 
 	int[] ls_x = {0};
@@ -15,14 +16,12 @@ public class Line {
 	private static final boolean LS = true;
 	private static final boolean RS = false;
 	
-	private boolean empty = true;
-	
 	private static HashMap<String, String> encode = new HashMap<String, String>();
+	private static HashMap<String, String> decode = new HashMap<String, String>();
 	
 	static {
 		encode.put("a", "KEY_A");
 		encode.put("b", "KEY_B");
-
 		encode.put("x", "KEY_X");
 		encode.put("y", "KEY_Y");
 
@@ -55,12 +54,48 @@ public class Line {
 		
 		encode.put("ls", "KEY_LSTICK");
 		encode.put("rs", "KEY_RSTICK");
+		
+		decode.put("KEY_A", "a");
+		decode.put("KEY_B", "b");
+		decode.put("KEY_X", "x");
+		decode.put("KEY_Y", "y");
+
+		decode.put("KEY_ZR", "zr");
+		decode.put("KEY_ZL", "zl");
+
+		decode.put("KEY_R", "r");
+		decode.put("KEY_L", "l");
+
+		decode.put("KEY_PLUS", "+");
+		decode.put("KEY_MINUS", "-");
+
+		decode.put("KEY_DLEFT", "dp-l");
+		decode.put("KEY_DRIGHT", "dp-r");
+		decode.put("KEY_DUP", "dp-u");
+		decode.put("KEY_DDOWN", "dp-d");
 	}
 	
 	ArrayList<String[]> inputs = new ArrayList<String[]>();
 	
 	public Line(int duration) {
 		this.duration = duration;
+	}
+	
+	//construct a Line from an NX-TAS script line
+	public Line(String scriptLine) {
+		duration = 1;
+		String[] parts = scriptLine.split(" ");
+		String[] buttons = parts[1].split(";");
+		for (String button : buttons) {
+			String[] val = {button};
+			inputs.add(val);
+		}
+		String[] ls = parts[2].split(";");
+		ls_x[0] = Integer.parseInt(ls[0]);
+		ls_y[0] = Integer.parseInt(ls[1]);
+		String[] rs = parts[3].split(";");
+		rs_x[0] = Integer.parseInt(rs[0]);
+		rs_y[0] = Integer.parseInt(rs[1]);
 	}
 	
 	public void add(String s) {	
@@ -74,7 +109,6 @@ public class Line {
 		
 		//loops
 		else if (s.contains("/")){
-			empty = false;
 			if (s.endsWith("/"))
 				s += " ";
 			String[] val = s.split("/");
@@ -104,7 +138,7 @@ public class Line {
 				addStick(RS, 0, s);
 			else {
 				String str = encode.get(s);
-				if (s != null) {
+				if (str != null) {
 					String[] val = {str};
 					inputs.add(val);
 				}
@@ -249,5 +283,17 @@ public class Line {
 	
 	public boolean isEmpty() {
 		return get(0).equals("NONE 0;0 0;0");
+	}
+	
+	public boolean equals(Object o) {
+		Line other = (Line) o;
+		
+		System.out.println("checking");
+		
+		return (this.ls_x.equals(other.ls_x) &&
+				this.ls_y.equals(other.ls_y) &&
+				this.rs_x.equals(other.rs_x) &&
+				this.rs_y.equals(other.rs_y) &&
+				this.inputs.equals(other.inputs));
 	}
 }

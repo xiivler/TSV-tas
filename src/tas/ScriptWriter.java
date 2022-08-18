@@ -55,21 +55,25 @@ public class ScriptWriter {
 	String first = "";
 	while (scan.hasNextLine()) {
 		Scanner s = new Scanner(scan.nextLine()).useDelimiter("\t");
+		boolean durationWritten = false;
 		int duration = 1;
-		if (s.hasNextInt())
+		if (s.hasNextInt()) {
 			duration = s.nextInt();
+			durationWritten = true;
+		}
 		else if (s.hasNext()) {
 			first = s.next();
-			if (first.length() >= 2 && first.substring(0, 2).equals("//"))
-				duration = 0;
+			if (first.length() >= 2 && first.substring(0, 2).equals("//")) {
+				continue;
+			}
 			else if (first.length() > 0 && first.charAt(0) == '$' && first.contains("=")) {
-				duration = 0;
 				replace.put(first.substring(0, first.indexOf("=")).trim(), prepareToken(first.substring(first.indexOf("=") + 1).trim(), replace));
+				continue;
 			}
 		}
 		Line ln = new Line(duration);
 		//if there was no duration number we already got the first input and need to add it to the line
-		if (duration == 1)
+		if (!durationWritten) {
 			try {
 				ln.add(prepareToken(first, replace));
 			}
@@ -80,24 +84,23 @@ public class ScriptWriter {
 				destination.delete();
 				return "Syntax errors in TSV prevented file generation.";
 			}
-		if (duration >= 1) {
-			while (s.hasNext())
-				try {
-					ln.add(prepareToken(s.next(), replace));
-				}
-				catch (Exception e) {
-					s.close();
-					scan.close();
-					print.close();
-					destination.delete();
-					return "Syntax errors in TSV prevented file generation.";
-				}
-			if (!includeEmptyLines && ln.isEmpty())
-				line += duration;
-			else
-				for (int i = 0; i < duration; i++, line++)
-					print.println(line + " " + ln.get(i));
 		}
+		while (s.hasNext())
+			try {
+				ln.add(prepareToken(s.next(), replace));
+			}
+			catch (Exception e) {
+				s.close();
+				scan.close();
+				print.close();
+				destination.delete();
+				return "Syntax errors in TSV prevented file generation.";
+			}
+		if (!includeEmptyLines && ln.isEmpty())
+			line += duration;
+		else
+			for (int i = 0; i < duration; i++, line++)
+				print.println(line + " " + ln.get(i));
 	}
 	scan.close();
 	print.close();
